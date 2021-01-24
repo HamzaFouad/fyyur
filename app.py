@@ -8,6 +8,7 @@ import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -19,8 +20,9 @@ from forms import *
 
 app = Flask(__name__)
 moment = Moment(app)
-db = SQLAlchemy(app)
 app.config.from_object('config') # COMPLETE: connect to a local postgresql database
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 #----------------------------------------------------------------------------#
@@ -30,23 +32,24 @@ app.config.from_object('config') # COMPLETE: connect to a local postgresql datab
 class Venue(db.Model):
     __tablename__ = 'Venue'
 
+    # from show_venue
     # id, name, genres, address, city, state, phone, website, facebook_link, seeking_talent, seeking_desription, image_link, 
     # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    genres = db.Column(db.ARRAY(db.String(32)), nullable=False)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String(32)), nullable=False)
     website = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=True)
     seeking_description = db.Column(db.String(500))
     
-    shows_id = db.relationship('shows', backref='artist', lazy=True)
+    shows_id = db.relationship('Show', backref='venue', lazy=True)
 
     def __repr__(self):
         return f'<Venue ID:{self.id}, Name:{self.name}>'
@@ -56,19 +59,48 @@ class Venue(db.Model):
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
+    # from show_artist
+    # id, name, genres, city, state, phone, website, facebook_link, seeking_venue, seeking_description,
+    # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
+
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, nullable=False)
+    genres = db.Column(db.ARRAY(db.String(32)), nullable=False)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    website = db.Column(db.ARRAY(db.String(120)))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    seeking_venue = db.Column(db.Boolean, default=True)
+    seeking_description = db.Column(db.String(500))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    shows_id = db.relationship('Show', backref='artist', lazy=True)
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+    def __repr__(self):
+      return f'<Venue ID:{self.id}, Name:{self.name}>'
+    
+    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
 
+# COMPLETE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+class Show(db.Model):
+  __tablename__ = 'Show'
+
+  # start_time
+  # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
+
+  id = db.Column(db.Integer, primary_key=True)
+  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
+  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
+  start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+  def __repr__(self):
+    return f'<Show ID:{self.id}, Venue ID:{self.venue_id}, Artist ID:{self.artist_id}>'
+
+
+db.create_all()
+db.session.commit()
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -287,6 +319,7 @@ def search_artists():
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
+  
   data1={
     "id": 4,
     "name": "Guns N Petals",
