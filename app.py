@@ -12,16 +12,16 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
 
 app = Flask(__name__)
 moment = Moment(app)
-app.config.from_object('config')
 db = SQLAlchemy(app)
+app.config.from_object('config') # COMPLETE: connect to a local postgresql database
 
-# TODO: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -30,16 +30,28 @@ db = SQLAlchemy(app)
 class Venue(db.Model):
     __tablename__ = 'Venue'
 
+    # id, name, genres, address, city, state, phone, website, facebook_link, seeking_talent, seeking_desription, image_link, 
+    # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
+
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, nullable=False)
+    genres = db.Column(db.ARRAY(db.String(32)), nullable=False)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    website = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean, default=True)
+    seeking_description = db.Column(db.String(500))
+    
+    shows_id = db.relationship('shows', backref='artist', lazy=True)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    def __repr__(self):
+        return f'<Venue ID:{self.id}, Name:{self.name}>'
+    
+    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -70,6 +82,7 @@ def format_datetime(value, format='medium'):
   return babel.dates.format_datetime(date, format)
 
 app.jinja_env.filters['datetime'] = format_datetime
+
 
 #----------------------------------------------------------------------------#
 # Controllers.
