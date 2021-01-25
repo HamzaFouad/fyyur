@@ -2,10 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from os import name
-import sys
 import json
-from re import A
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
@@ -199,54 +196,50 @@ def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # COMPLETE: replace with real venue data from the venues table, using venue_id
 
-  try:
-    data = []
-    dateNow = datetime.now()
-    venue = Venue.query.get(venue_id)
-    shows = Show.query.filter_by(venue_id=venue.id).all()
+  data = []
+  dateNow = datetime.now()
+  venue = Venue.query.get(venue_id)
+  shows = Show.query.filter_by(venue_id=venue.id).all()
 
-    upcoming_shows_count = 0
-    past_shows_count = 0
-    upcoming_shows = []
-    past_shows = []
+  upcoming_shows_count = 0
+  past_shows_count = 0
+  upcoming_shows = []
+  past_shows = []
 
-    for show in shows:
-      showData = {
-        'artist_id': show.artist.id,
-        'artist_name': show.artist.name,
-        'artist_image_link': show.artist.image_link,
-        'start_time': format_datetime(str(show.start_time))
-      }
-      if show.start_time > dateNow:
-        upcoming_shows.append(show)
-        upcoming_shows_count += 1
-      else:
-        past_shows.append(show)
-        past_shows_count += 1
+  for show in shows:
+    showData = {
+      'artist_id': show.artist_id,
+      'artist_name': show.artists.name,
+      'artist_image_link': show.artists.image_link,
+      'start_time': format_datetime(str(show.start_time))
+    }
+    if show.start_time > dateNow:
+      upcoming_shows.append(showData)
+      upcoming_shows_count += 1
+    else:
+      past_shows.append(showData)
+      past_shows_count += 1
 
-    data = {
-      "id": venue.id,
-      "name": venue.name,
-      "genres": venue.genres,
-      "address": venue.address,
-      "city": venue.city,
-      "state": venue.city,
-      "phone": venue.phone,
-      "website": venue.website,
-      "facebook_link": venue.facebook_link,
-      "seeking_talent": venue.seeking_talent,
-      "seeking_description": venue.seeking_description,
-      "image_link": venue.image_link,
-      "past_shows": past_shows,
-      "upcoming_shows": upcoming_shows,
-      "past_shows_count": past_shows_count,
-      "upcoming_shows_count": upcoming_shows_count
-      }
-    return render_template('pages/show_venue.html', venue=data)
-  except:
-    flash('An error occurred. This venue is corrupted and could not be viewed')
-    return redirect(url_for('index'))
-  
+  data = {
+    "id": venue.id,
+    "name": venue.name,
+    "genres": venue.genres,
+    "address": venue.address,
+    "city": venue.city,
+    "state": venue.city,
+    "phone": venue.phone,
+    "website": venue.website,
+    "facebook_link": venue.facebook_link,
+    "seeking_talent": venue.seeking_talent,
+    "seeking_description": venue.seeking_description,
+    "image_link": venue.image_link,
+    "past_shows": past_shows,
+    "upcoming_shows": upcoming_shows,
+    "past_shows_count": past_shows_count,
+    "upcoming_shows_count": upcoming_shows_count
+    }
+  return render_template('pages/show_venue.html', venue=data)
+
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -312,7 +305,7 @@ def delete_venue(venue_id):
 
 #  Artists
 #  ----------------------------------------------------------------
-@app.route('/artists')
+@app.route('/artists', methods=['GET'])
 def artists():
   # COMPLETE: replace with real data returned from querying the database
 
@@ -342,56 +335,53 @@ def search_artists():
   }
   return render_template('pages/search_artists.html', results=response, search_term=search_term)
 
-@app.route('/artists/<int:artist_id>')
+@app.route('/artists/<int:artist_id>', methods=['GET'])
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
   # COMPLETED: replace with real venue data from the venues table, using venue_id
   
-  try:
-    dateNow = datetime.now()
-    artist = Artist.query.get(artist_id)
-    shows = Show.query.filter_by(artist_id=artist_id).all()
 
-    upcoming_shows_count = 0
-    past_shows_count = 0
-    upcoming_shows = []
-    past_shows = []
+  dateNow = datetime.now()
+  artist = Artist.query.get(artist_id)
+  shows = Show.query.filter_by(artist_id=artist_id).all()
 
-    for show in shows:
-      showData = {
-        'venue_id': show.venue_id,
-        'venue_name': show.venue.name,
-        'venue_image_link': show.venue.image_link,
-        'start_time': format_datetime(str(show.start_time))
-      } 
-      if show.start_time > dateNow:
-        upcoming_shows.append(showData)
-        upcoming_shows_count += 1
-      else:
-        past_shows.append(showData)
-        past_shows_count += 1
+  upcoming_shows_count = 0
+  past_shows_count = 0
+  upcoming_shows = []
+  past_shows = []
 
-    data = {
-      "id": artist.id,
-      "name": artist.name,
-      "genres": artist.genres,
-      "city": artist.city,
-      "state": artist.city,
-      "phone": artist.phone,
-      "website": artist.website,
-      "image_link": artist.image_link,
-      "facebook_link": artist.facebook_link,
-      "seeking_venue": artist.seeking_venue,
-      "seeking_description": artist.seeking_description,
-      "past_shows": past_shows,
-      "upcoming_shows": upcoming_shows,
-      "past_shows_count": past_shows_count,
-      "upcoming_shows_count": upcoming_shows_count
-      }
-    return render_template('pages/show_artist.html', artist=data)
-  except:
-    flash('An error occurred. This Artist is corrupted and could not be viewed')
-    return redirect(url_for('index'))
+  for show in shows:
+    showData = {
+      'venue_id': show.venue_id,
+      'venue_name': show.venues.name,
+      'venue_image_link': show.venues.image_link,
+      'start_time': format_datetime(str(show.start_time))
+    } 
+    if show.start_time > dateNow:
+      upcoming_shows.append(showData)
+      upcoming_shows_count += 1
+    else:
+      past_shows.append(showData)
+      past_shows_count += 1
+
+  data = {
+    "id": artist.id,
+    "name": artist.name,
+    "genres": artist.genres,
+    "city": artist.city,
+    "state": artist.city,
+    "phone": artist.phone,
+    "website": artist.website,
+    "image_link": artist.image_link,
+    "facebook_link": artist.facebook_link,
+    "seeking_venue": artist.seeking_venue,
+    "seeking_description": artist.seeking_description,
+    "past_shows": past_shows,
+    "upcoming_shows": upcoming_shows,
+    "past_shows_count": past_shows_count,
+    "upcoming_shows_count": upcoming_shows_count
+    }
+  return render_template('pages/show_artist.html', artist=data)
 
 #  Update
 #  ----------------------------------------------------------------
@@ -569,6 +559,7 @@ def shows():
   shows = Show.query.all()
   data = []
   for show in shows:
+    print(f'{Color.RED}Venue_id:{show.venues.id}, Artist_id:{show.artists.id}{Color.END}')
     data.append(
       {
         "venue_id": show.venues.id,
