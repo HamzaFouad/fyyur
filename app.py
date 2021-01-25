@@ -255,8 +255,6 @@ def create_venue_submission():
   # COMPLETE: modify data to be the data object returned from db insertion
   try: 
     form = VenueForm()
-    print(f'{Color.RED} successful create_venue_submission call {Color.END}')
-    print(f'{Color.RED} {form.data} {Color.END}')
     venue = Venue(
       name = form.name.data,
       city = form.city.data,
@@ -267,7 +265,6 @@ def create_venue_submission():
       image_link = form.image_link.data,
       facebook_link = form.facebook_link.data,
     )
-    print(f'{Color.RED} {venue.name} {venue.city} {venue.state} {venue.address} {venue.genres} {Color.END}')
     db.session.add(venue)
     db.session.commit()
     db.session.close()
@@ -514,11 +511,7 @@ def create_artist_submission():
   # COMPLETE: modify data to be the data object returned from db insertion
 
   try: 
-    print(f'{Color.RED} successful create_artist_submission call {Color.END}')
     form = ArtistForm()
-    print(f'{Color.RED} {form.data} {Color.END}')
-    print(f'{Color.RED} ------------ {Color.END}')
-    print(f'{Color.RED} {form.name.data} {form.city.data} {form.state.data} {form.phone.data} {form.genres.data} {Color.END}')
 
     artist = Artist(
       name = form.name.data,  
@@ -529,9 +522,6 @@ def create_artist_submission():
       image_link = form.image_link.data,
       facebook_link = form.facebook_link.data,
     )
-
-    print(f'{Color.RED} ------------ {Color.END}')
-    # print(f'ArtistClass: {Color.RED} {artist.name} {artist.city} {artist.state} {artist.address} {artist.phone} {Color.END}')
 
     db.session.add(artist)
     db.session.commit()
@@ -559,7 +549,6 @@ def shows():
   shows = Show.query.all()
   data = []
   for show in shows:
-    print(f'{Color.RED}Venue_id:{show.venues.id}, Artist_id:{show.artists.id}{Color.END}')
     data.append(
       {
         "venue_id": show.venues.id,
