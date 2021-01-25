@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: b595640905f1
+Revision ID: e6a64838dc4d
 Revises: 
-Create Date: 2021-01-24 18:30:28.985062
+Create Date: 2021-01-25 03:07:13.389556
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b595640905f1'
+revision = 'e6a64838dc4d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,11 +21,11 @@ def upgrade():
     op.create_table('artists',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('genres', sa.ARRAY(sa.String(length=32)), nullable=False),
+    sa.Column('genres', sa.ARRAY(sa.String(length=32)), nullable=True),
     sa.Column('city', sa.String(length=120), nullable=True),
     sa.Column('state', sa.String(length=120), nullable=True),
     sa.Column('phone', sa.String(length=120), nullable=True),
-    sa.Column('website', sa.ARRAY(sa.String(length=120)), nullable=True),
+    sa.Column('website', sa.String(length=120), nullable=True),
     sa.Column('image_link', sa.String(length=500), nullable=True),
     sa.Column('facebook_link', sa.String(length=120), nullable=True),
     sa.Column('seeking_venue', sa.Boolean(), nullable=True),
@@ -39,7 +39,7 @@ def upgrade():
     sa.Column('state', sa.String(length=120), nullable=True),
     sa.Column('address', sa.String(length=120), nullable=True),
     sa.Column('phone', sa.String(length=120), nullable=True),
-    sa.Column('genres', sa.ARRAY(sa.String(length=32)), nullable=False),
+    sa.Column('genres', sa.ARRAY(sa.String(length=32)), nullable=True),
     sa.Column('website', sa.String(length=120), nullable=True),
     sa.Column('image_link', sa.String(length=500), nullable=True),
     sa.Column('facebook_link', sa.String(length=120), nullable=True),
