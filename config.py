@@ -9,7 +9,7 @@ DEBUG = True
 # Connect to the database
 
 # COMPLETE IMPLEMENT DATABASE URL
-SQLALCHEMY_DATABASE_URI = 'postgres:///fyyurdb' # using the default user with no password
+SQLALCHEMY_DATABASE_URI = 'postgres://postgres:pw@localhost:5432/fyyurdb' # using the default user with no password
 
 # Suppress console warnings
 SQLALCHEMY_TRACK_MODIFICATIONS = False
