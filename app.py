@@ -14,8 +14,9 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from sqlalchemy.sql.elements import collate
 from forms import *
-#######################################
+from models import *
 
+#######################################
 class Color:
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
@@ -28,92 +29,6 @@ class Color:
     UNDERLINE = '\033[4m'
     END = '\033[0m'
 
-#----------------------------------------------------------------------------#
-# App Config.
-#----------------------------------------------------------------------------#
-
-app = Flask(__name__)
-moment = Moment(app)
-app.config.from_object('config') # COMPLETE: connect to a local postgresql database
-db = SQLAlchemy(app)
-migrate = Migrate(app, db, compare_type=True)
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-class Venue(db.Model):
-    __tablename__ = 'venues'
-
-    # from show_venue
-    # id, name, genres, address, city, state, phone, website, facebook_link, seeking_talent, seeking_desription, image_link, 
-    # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String(32)))
-    website = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean, default=True)
-    seeking_description = db.Column(db.String(500))
-    
-    shows_id = db.relationship('Show', backref='venues', lazy=True)
-
-    def __repr__(self):
-        return f'<Venue ID:{self.id}, Name:{self.name}>'
-    
-    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
-
-class Artist(db.Model):
-    __tablename__ = 'artists'
-
-    # from show_artist
-    # id, name, genres, city, state, phone, website, facebook_link, seeking_venue, seeking_description,
-    # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    genres = db.Column(db.ARRAY(db.String(32)))
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean, default=True)
-    seeking_description = db.Column(db.String(500))
-
-    shows_id = db.relationship('Show', backref='artists', lazy=True)
-
-    def __repr__(self):
-      return f'<Artist ID:{self.id}, Name:{self.name}>'
-    
-    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
-
-# COMPLETE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-
-class Show(db.Model):
-  __tablename__ = 'shows'
-
-  # start_time
-  # shows {past_shows, upcoming_shows, past_shows_count, upcoming_shows_count}
-
-  id = db.Column(db.Integer, primary_key=True)
-  venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False)
-  artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False)
-  start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-  def __repr__(self):
-    return f'<Show ID:{self.id}, Venue ID:{self.venue_id}, Artist ID:{self.artist_id}>'
-
-
-# db.create_all()
-# db.session.commit()
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -150,18 +65,19 @@ def venues():
   venues = Venue.query.all()
   
   for venue in venues:
-
-    # n_upcoming_shows = 0
-    # shows = Show.query.filter_by(venue_id=venue.id).all()
-    # for show in shows:
-    #   if show.start_time > dateNow:
-    #       n_upcoming_shows += 1
+    # upcoming_shows = (
+    #   Show.query.filter_by(venue_id=venue.id)
+    #   .filter(Show.start_time > dateNow)
+    #   .all()
+    # )
+    # made join upon requirements :)
+    # although I find the previous one is more efficient and simpler.
     upcoming_shows = (
-      Show.query.filter_by(venue_id=venue.id)
-      .filter(Show.start_time > dateNow)
+      db.session.query(Show).join(Venue)  
+      .filter(Show.venue_id==venue.id)    
+      .filter(Show.start_time>dateNow)
       .all()
     )
-
     data.append(
       {
         'city': venue.city,
@@ -549,7 +465,7 @@ def shows():
   shows = Show.query.all()
   data = []
   for show in shows:
-    data.append(
+      data.append(
       {
         "venue_id": show.venues.id,
         "venue_name": show.venues.name,
