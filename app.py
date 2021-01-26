@@ -60,37 +60,46 @@ def index():
 def venues():
   # COMPLETE: replace with real venues data .
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data = []
+  data = {}
   dateNow = datetime.now()
-  venues = Venue.query.all()
-  
-  for venue in venues:
-    # upcoming_shows = (
-    #   Show.query.filter_by(venue_id=venue.id)
-    #   .filter(Show.start_time > dateNow)
-    #   .all()
-    # )
-    # made join upon requirements :)
-    # although I find the previous one is more efficient and simpler.
-    upcoming_shows = (
-      db.session.query(Show).join(Venue)  
-      .filter(Show.venue_id==venue.id)    
-      .filter(Show.start_time>dateNow)
-      .all()
-    )
-    data.append(
-      {
-        'city': venue.city,
-        'state': venue.state,
-        'venues': [{
+  distnict_locations = db.session.query(Venue.city, Venue.state).distinct() 
+
+  for location in distnict_locations:
+    city, state = location
+    data[location] = {
+      'city': city,
+      'state': state,
+      'venues': []
+      }
+
+    # venues = Venue.query.filter((Venue.city, Venue.state) == location).all()
+    # I don't know why the above line doesn't work, mabye it accepts only 1 variable. # FIXME 
+
+    venues = Venue.query.filter(Venue.city==city).filter(Venue.state==state).all()
+    for venue in venues:
+      # upcoming_shows = (
+      #   Show.query.filter_by(venue_id=venue.id)
+      #   .filter(Show.start_time > dateNow)
+      #   .all()
+      # )
+      # made join upon requirements :)
+      # although I find the above one more efficient and simpler.
+      upcoming_shows = (
+        db.session.query(Show).join(Venue)  
+        .filter(Show.venue_id==venue.id)    
+        .filter(Show.start_time>dateNow)
+        .all()
+      )
+      data[location]['venues'].append({
           'id': venue.id,
           'name': venue.name,
           'num_upcoming_shows':len(upcoming_shows)
-        }]
-      }
-    )
+        }
+      )
+  
+  areas = list(data.values())
 
-  return render_template('pages/venues.html', areas=data)
+  return render_template('pages/venues.html', areas=areas)
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -116,6 +125,15 @@ def show_venue(venue_id):
   dateNow = datetime.now()
   venue = Venue.query.get(venue_id)
   shows = Show.query.filter_by(venue_id=venue.id).all()
+  #     #   db.session.query(Show).join(Venue)  
+  #     # .filter(Show.venue_id==venue.id)    
+  #     # .filter(Show.start_time>dateNow)
+  #     # .all()
+  # shows = (
+  #   db.session.query(Show).join(Venue)
+  #   .filter(Show.venue_id==venue.id)
+  #   .filter()
+  # )
 
   upcoming_shows_count = 0
   past_shows_count = 0
