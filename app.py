@@ -240,7 +240,7 @@ def search_artists():
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
   search_term = request.form.get('search_term', '')
-  query = Artist.query.filter(Artist.name.ilike(f'%{search_term}%'))
+  query = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
 
   response={
     "count": len(query),
